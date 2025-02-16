@@ -644,8 +644,8 @@ def register_callbacks(app):
                               locationmode='country names',
                               color='Peso',
                               hover_name='Paese',
-                              color_continuous_scale='Plasma',  # A beautiful color scale
-                              projection='natural earth',  # Beautiful projection
+                              color_continuous_scale=px.colors.sequential.Plasma_r,  # Reverse Plasma scale
+                              projection='natural earth',
                               title="Country Allocation by Weight")
 
         portfolio_fig = plc.plot_line_chart(column_except_date, portfolio_df, PORTFOLIO_COLOR, BENCHMARK_COLOR)
