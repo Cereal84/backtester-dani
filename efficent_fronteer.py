@@ -151,13 +151,11 @@ def calcola_frontiera_efficente(dati, pesi_correnti):
         all_assets = [col.replace(' Weight', '') for col in weight_columns]
 
         # Create a color mapping for each asset (using original asset names)
+        # Define pastel colors
         pastel_colors = [
-            "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
-            "#FFC4C4", "#FFE4C4", "#FFFFC4", "#C4FFC9", "#C4E1FF",
-            "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
-            "#FFC4C4", "#FFE4C4", "#FFFFC4", "#C4FFC9", "#C4E1FF",
+            '#AEC6CF', '#FFD1DC', '#FFB3DE', '#B5EAEA', '#C2F0C2',
+            '#FFBCB3', '#FFCC99', '#D9EAD3', '#D5A6BD', '#FF6666'
         ]
-        asset_color_map = {asset: pastel_colors[i % len(pastel_colors)] for i, asset in enumerate(all_assets)}
 
         for i, (_, portfolio) in enumerate(all_model_portfolios.iterrows()):
             weights = portfolio[weight_columns]
@@ -177,18 +175,21 @@ def calcola_frontiera_efficente(dati, pesi_correnti):
             display_labels = [str(label).replace(" ", "<br>") if len(str(label)) > 20 else str(label) for label in
                               original_labels]
 
-            # Assign colors based on the original asset names
-            colors = [asset_color_map[asset] for asset in original_labels]
-
             pie_fig.add_trace(go.Pie(
                 labels=display_labels,  # Use modified labels for display
                 values=significant_weights.values.astype(float).round(2),
                 name=portfolio['Portfolio'],
                 title=f"{portfolio['Portfolio']}<br>Ritorno: {portfolio['Annual Return']:.2%}<br>Volatilità: {portfolio['Annual Volatility']:.2%}<br>Sharpe: {portfolio['Sharpe Ratio']:.2f}",
                 textinfo='label+percent',
-                hoverinfo='label+value',
-                marker=dict(colors=colors),  # Use colors mapped to original asset names
-                domain=dict(row=i // 3, column=i % 3)
+                hoverinfo='label+percent',  # Display label and percentage on hover
+                textfont=dict(size=12, color='black'),  # Style text for better visibility
+                marker=dict(
+                    colors=pastel_colors,  # Use pastel color palette
+                    line=dict(color='white', width=2)  # Add white border to make slices pop
+                ),
+                domain=dict(row=i // 3, column=i % 3),
+                pull=[0.1, 0, 0, 0, 0, 0, 0, 0],  # Slightly "explode" the first slice for emphasis (optional)
+                showlegend=False  # Hide the legend for a cleaner look
             ))
 
         pie_fig.update_layout(
