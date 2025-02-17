@@ -1,0 +1,11 @@
+# Caddyfile
+
+# Handle traffic for dev.portfoliopilot.app
+dev.portfoliopilot.app:80 {
+    reverse_proxy localhost:8080
+}
+
+# Handle traffic for portfoliopilot.app
+portfoliopilot.app:80 {
+    reverse_proxy localhost:1080
+}
