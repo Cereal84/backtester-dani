@@ -9,3 +9,12 @@ dev.portfoliopilot.app:80 {
 portfoliopilot.app:80 {
     reverse_proxy localhost:1080
 }
+
+# Maintenance page
+#portfoliopilot.app:80 {
+#    reverse_proxy localhost:1234
+#}
+
+
+
+
