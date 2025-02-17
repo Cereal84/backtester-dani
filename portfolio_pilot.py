@@ -14,31 +14,13 @@ from imports_handler import match_asset_name, importa_dati,load_asset_list
 from portfolio_allocation import PortfolioAllocation
 from math_logic import MathLogic
 import plotly.express as px
+from portfolio_report import PortfolioReport
 
-from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH
+from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH,LOGIN_INDICATOR_STYLE
 
 warnings.filterwarnings("ignore", category=UserWarning)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)  # Show only errors
-
-# Define style constant
-LOGIN_INDICATOR_STYLE = {
-    "position": "fixed",
-    "top": "15px",  # Ridotto da 20px
-    "right": "15px",  # Ridotto da 20px
-    "fontSize": "14px",  # Ridotto da 16px
-    "zIndex": 1500,
-    "cursor": "default",
-    "transition": "opacity 0.3s ease",
-    "display": "flex",
-    "alignItems": "center",
-    "gap": "6px",  # Ridotto da 8px
-    "backgroundColor": "rgba(255, 255, 255, 0.9)",
-    "padding": "6px 10px",  # Ridotto da 8px 12px
-    "borderRadius": "15px",  # Ridotto da 20px
-    "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.1)"
-}
-
 
 def register_callbacks(app):
     """Registra tutti i callback per l'app Dash."""
@@ -567,7 +549,7 @@ def register_callbacks(app):
         )
 
         titolo_warning = html.Div(
-            children="Funzione sperimentale, potrebbero esserci errori o dati mancanti",
+            children="Funzione sperimentale, potrebbero esserci errori",
             style={
                 'textAlign': 'center',
                 'fontSize': '20px',
@@ -633,7 +615,7 @@ def register_callbacks(app):
             margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
         )
 
-        """create_portfolio_report(portfolio_df, drawdown, factor_exposure_portfolio, factor_exposure_benchmark,
+        """PortfolioReport.create_portfolio_report(portfolio_df, drawdown, factor_exposure_portfolio, factor_exposure_benchmark,
                                 correlation_matrix, cagr_data, volatility_data, sharpe_data, country_allocation,
                                 sector_allocation)
         """

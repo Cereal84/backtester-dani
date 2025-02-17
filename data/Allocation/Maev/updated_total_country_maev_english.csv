@@ -3775,13 +3775,36 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,LU1708330235,Global,100.0,Amundi ETF J.P. Morgan Government Bond Global UCITS ETF DR EUR Hedged,JP Morgan Global Government Bond (Hedged EUR)
 ,LU1437016204,Global,100.0,Amundi ETF J.P. Morgan GBI Global Government Bonds UCITS ETF DR,JP Morgan Government Bond Global
 ,IE00BPRCH686,Japan,100.0,Invesco JPX-Nikkei 400 UCITS ETF,JPX-Nikkei 400
+,LU1838002480,Global,100.0,Lyxor MSCI Robotics & AI ESG Filtered UCITS ETF Acc,MSCI ACWI IMI Robotics & AI ESG Filtered
+,DE000A1JF7N6,Canada,100.0,HSBC MSCI Canada UCITS ETF USD,MSCI Canada
+,FR0010655704,France,100.0,Amundi ETF MSCI France UCITS ETF,MSCI France
+,FR0010361683,India,100.0,Amundi MSCI India II UCITS ETF EUR Acc,MSCI India
+,US78462F1030,United States,100.0,SPDR S&P 500 ETF,S&P 500
+,US46090E1038,United States,100.0,Nasdaq 100,Nasdaq-100
+,US46434G8226,Japan,100.0,iShares MSCI Japan ETF,MSCI Japan
+,FR0010755611,United States,100.0,Amundi ETF Leveraged MSCI USA Daily UCITS ETF EUR,MSCI USA Leveraged 2x Daily
+,FR0010342592,United States,100.0,Amundi Nasdaq-100 Daily (2x) Leveraged UCITS ETF Acc,Nasdaq-100 Leveraged Notional Net
+,FR0011119171,United States,100.0,Amundi Russell 1000 Growth UCITS ETF Acc,Russell 1000 Growth
+,DE000A0Q8NE4,United States,100.0,L&G Russell 2000 US Small Cap UCITS ETF,Russell 2000
+,FR0011871136,United States,100.0,Lyxor PEA S&P 500 UCITS ETF Couverte en EUR - Capi.,S&P 500 EUR Hedged
+,LU0411078552,United States,100.0,Xtrackers S&P 500 2x Leveraged Daily Swap UCITS ETF 1C,S&P 500 Leverage 2x Daily
+,LU0832435464,United States,100.0,Amundi S&P 500 VIX Futures Enhanced Roll UCITS ETF Acc,S&P 500 VIX Futures Enhanced Roll
+,IE00B3VSSL01,United States,100.0,Invesco US Technology Sector UCITS ETF,S&P Select Sector Capped 20% Technology
+,LU1079841273,United States,100.0,Ossiam Shiller Barclays CAPE® US Sector Value TR UCITS ETF 1C (EUR),Shiller Barclays CAPE US Sector Value
+,FR0010510800,Eurozone,100.0,Amundi EUR Overnight Return UCITS ETF Acc,Solactive Euro Overnight Return
+,LU2233156582,Eurozone,100.0,Amundi Prime Euro Government Bonds 0-1Y UCITS ETF DR (C),Solactive Eurozone Government Bond 0-1 Year
+,IE00B60SWV01,United Kingdom,100.0,Invesco FTSE 250 UCITS ETF,FTSE 250
+,IE000N5JOGS2,China,100.0,HSBC China Government Local Bond UCITS ETF C,Bloomberg China Treasury + Policy Bank
+,DE000A0H0728,Global,100.0,iShares Diversified Commodity Swap UCITS ETF (DE),Bloomberg Commodity
+,IE00B58ZM503,Global,100.0,UBS ETF (IE) Bloomberg Commodity Index SF UCITS ETF (EUR) A-acc,Bloomberg Commodity (EUR Hedged)
+,DE000A1CXBV8,Global,100.0,L&G Longer Dated All Commodities UCITS ETF,Bloomberg Commodity Index 3 Month Forward
+,LU1829218749,Global,100.0,Amundi Bloomberg Equal-Weight Commodity Ex-Agriculture UCITS ETF Acc,Bloomberg Energy and Met
+,LU0779800910,China,100.0,Xtrackers CSI 300 Swap UCITS ETF 1C,CSI 300
 ,FR0011869312,Australia,25.0,Lyxor PEA Asie Pacifique (MSCI AC Asia Pacific Ex Japan) UCITS ETF - Acc,MSCI AC Asia Pacific ex-Japan
 ,FR0011869312,China,25.0,Lyxor PEA Asie Pacifique (MSCI AC Asia Pacific Ex Japan) UCITS ETF - Acc,MSCI AC Asia Pacific ex-Japan
 ,FR0011869312,South Korea,20.0,Lyxor PEA Asie Pacifique (MSCI AC Asia Pacific Ex Japan) UCITS ETF - Acc,MSCI AC Asia Pacific ex-Japan
 ,FR0011869312,Hong Kong,15.0,Lyxor PEA Asie Pacifique (MSCI AC Asia Pacific Ex Japan) UCITS ETF - Acc,MSCI AC Asia Pacific ex-Japan
 ,FR0011869312,Other,15.0,Lyxor PEA Asie Pacifique (MSCI AC Asia Pacific Ex Japan) UCITS ETF - Acc,MSCI AC Asia Pacific ex-Japan
-,LU1838002480,Global,100.0,Lyxor MSCI Robotics & AI ESG Filtered UCITS ETF Acc,MSCI ACWI IMI Robotics & AI ESG Filtered
-,DE000A1JF7N6,Canada,100.0,HSBC MSCI Canada UCITS ETF USD,MSCI Canada
 ,FR0010717090,France,30.0,Amundi ETF MSCI EMU High Dividend UCITS ETF EUR (C),MSCI EMU High Dividend Yield
 ,FR0010717090,Germany,30.0,Amundi ETF MSCI EMU High Dividend UCITS ETF EUR (C),MSCI EMU High Dividend Yield
 ,FR0010717090,Italy,20.0,Amundi ETF MSCI EMU High Dividend UCITS ETF EUR (C),MSCI EMU High Dividend Yield
@@ -3802,16 +3825,12 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,IE00B3LK4Z20,United Kingdom,20.0,Invesco MSCI Europe Value UCITS ETF,MSCI Europe Value
 ,IE00B3LK4Z20,Italy,10.0,Invesco MSCI Europe Value UCITS ETF,MSCI Europe Value
 ,IE00B3LK4Z20,Other,10.0,Invesco MSCI Europe Value UCITS ETF,MSCI Europe Value
-,FR0010655704,France,100.0,Amundi ETF MSCI France UCITS ETF,MSCI France
-,FR0010361683,India,100.0,Amundi MSCI India II UCITS ETF EUR Acc,MSCI India
 ,LU0392495023,Australia,50.0,ComStage MSCI Pacific UCITS ETF,MSCI Pacific
 ,LU0392495023,Japan,40.0,ComStage MSCI Pacific UCITS ETF,MSCI Pacific
 ,LU0392495023,Other,10.0,ComStage MSCI Pacific UCITS ETF,MSCI Pacific
 ,DE000A1C22P6,Australia,50.0,HSBC MSCI Pacific ex Japan UCITS ETF USD,MSCI Pacific ex-Japan
 ,DE000A1C22P6,New Zealand,30.0,HSBC MSCI Pacific ex Japan UCITS ETF USD,MSCI Pacific ex-Japan
 ,DE000A1C22P6,Other,20.0,HSBC MSCI Pacific ex Japan UCITS ETF USD,MSCI Pacific ex-Japan
-,FR0010755611,United States,100.0,Amundi ETF Leveraged MSCI USA Daily UCITS ETF EUR,MSCI USA Leveraged 2x Daily
-,FR0010342592,United States,100.0,Amundi Nasdaq-100 Daily (2x) Leveraged UCITS ETF Acc,Nasdaq-100 Leveraged Notional Net
 ,NL0010436663,United States,60.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
 ,NL0010436663,Germany,10.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
 ,NL0010436663,France,5.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
@@ -3819,22 +3838,11 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,NL0010436663,Switzerland,5.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
 ,NL0010436663,Japan,10.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
 ,NL0010436663,Other,5.0,Meesman Indexfonds Aandelen Wereldwijd,Northern Trust MSCI World Custom ESG
-,IE00B4556L06,Global,100.0,iShares Physical Palladium ETC,Palladium spot price
-,DE000A1EK3B8,Global,100.0,Xtrackers Physical Palladium EUR Hedged ETC,Palladium spot price (EUR Hedged)
-,FR0011119171,United States,100.0,Amundi Russell 1000 Growth UCITS ETF Acc,Russell 1000 Growth
-,DE000A0Q8NE4,United States,100.0,L&G Russell 2000 US Small Cap UCITS ETF,Russell 2000
-,FR0011871136,United States,100.0,Lyxor PEA S&P 500 UCITS ETF Couverte en EUR - Capi.,S&P 500 EUR Hedged
-,LU0411078552,United States,100.0,Xtrackers S&P 500 2x Leveraged Daily Swap UCITS ETF 1C,S&P 500 Leverage 2x Daily
-,LU0832435464,United States,100.0,Amundi S&P 500 VIX Futures Enhanced Roll UCITS ETF Acc,S&P 500 VIX Futures Enhanced Roll
 ,LU1681048630,United States,50.0,Amundi S&P Global Luxury UCITS ETF EUR (C),S&P Global Luxury
 ,LU1681048630,France,20.0,Amundi S&P Global Luxury UCITS ETF EUR (C),S&P Global Luxury
 ,LU1681048630,Switzerland,15.0,Amundi S&P Global Luxury UCITS ETF EUR (C),S&P Global Luxury
 ,LU1681048630,Italy,10.0,Amundi S&P Global Luxury UCITS ETF EUR (C),S&P Global Luxury
 ,LU1681048630,Other,5.0,Amundi S&P Global Luxury UCITS ETF EUR (C),S&P Global Luxury
-,IE00B3VSSL01,United States,100.0,Invesco US Technology Sector UCITS ETF,S&P Select Sector Capped 20% Technology
-,LU1079841273,United States,100.0,Ossiam Shiller Barclays CAPE® US Sector Value TR UCITS ETF 1C (EUR),Shiller Barclays CAPE US Sector Value
-,FR0010510800,Eurozone,100.0,Amundi EUR Overnight Return UCITS ETF Acc,Solactive Euro Overnight Return
-,LU2233156582,Eurozone,100.0,Amundi Prime Euro Government Bonds 0-1Y UCITS ETF DR (C),Solactive Eurozone Government Bond 0-1 Year
 ,US37950E5490,United States,40.0,Global X SuperDividend,Solactive Global SuperDividend
 ,US37950E5490,United Kingdom,15.0,Global X SuperDividend,Solactive Global SuperDividend
 ,US37950E5490,Australia,10.0,Global X SuperDividend,Solactive Global SuperDividend
@@ -3855,7 +3863,6 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,FR0010468983,Spain,10.0,Amundi EURO STOXX 50 Daily (2x) Leveraged UCITS ETF Acc,EURO STOXX 50 Daily Leverage
 ,FR0010468983,Netherlands,10.0,Amundi EURO STOXX 50 Daily (2x) Leveraged UCITS ETF Acc,EURO STOXX 50 Daily Leverage
 ,FR0010468983,Other,15.0,Amundi EURO STOXX 50 Daily (2x) Leveraged UCITS ETF Acc,EURO STOXX 50 Daily Leverage
-,IE00B60SWV01,United Kingdom,100.0,Invesco FTSE 250 UCITS ETF,FTSE 250
 ,IE00B5456744,United States,45.0,Vanguard ESG Developed World All Cap Equity Index Fund,FTSE Developed All Cap Choice
 ,IE00B5456744,Japan,15.0,Vanguard ESG Developed World All Cap Equity Index Fund,FTSE Developed All Cap Choice
 ,IE00B5456744,United Kingdom,15.0,Vanguard ESG Developed World All Cap Equity Index Fund,FTSE Developed All Cap Choice
@@ -3873,7 +3880,6 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,FR0013346681,Italy,20.0,Amundi PEA Obligations d'État Euro UCITS ETF Acc,FTSE MTS Eurozone Government Bond IG
 ,FR0013346681,Spain,10.0,Amundi PEA Obligations d'État Euro UCITS ETF Acc,FTSE MTS Eurozone Government Bond IG
 ,FR0013346681,Other,10.0,Amundi PEA Obligations d'État Euro UCITS ETF Acc,FTSE MTS Eurozone Government Bond IG
-,CH0044781174,Other,100.0,Swisscanto ETF Precious Metal Physical Gold EUR A,Gold spot price (EUR Hedged)
 ,LU1681041205,Brazil,30.0,Amundi ETF Global Emerging Bond Markit iBoxx UCITS ETF USD,iBoxx $ Liquid Emerging Markets Sovereigns
 ,LU1681041205,South Africa,20.0,Amundi ETF Global Emerging Bond Markit iBoxx UCITS ETF USD,iBoxx $ Liquid Emerging Markets Sovereigns
 ,LU1681041205,India,10.0,Amundi ETF Global Emerging Bond Markit iBoxx UCITS ETF USD,iBoxx $ Liquid Emerging Markets Sovereigns
@@ -3886,9 +3892,6 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,LU1681040496,Germany,15.0,Amundi Euro High Yield Liquid Bond iBoxx UCITS ETF EUR (C),iBoxx EUR Liquid High Yield 30 Ex-Financial
 ,LU1681040496,France,10.0,Amundi Euro High Yield Liquid Bond iBoxx UCITS ETF EUR (C),iBoxx EUR Liquid High Yield 30 Ex-Financial
 ,LU1681040496,Other,30.0,Amundi Euro High Yield Liquid Bond iBoxx UCITS ETF EUR (C),iBoxx EUR Liquid High Yield 30 Ex-Financial
-,US78462F1030,United States,100.0,SPDR S&P 500 ETF,S&P 500
-,US46090E1038,United States,100.0,Nasdaq 100,Nasdaq-100
-,US46434G8226,Japan,100.0,iShares MSCI Japan ETF,MSCI Japan
 ,IE00BYSX5D68,Austria,10.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
 ,IE00BYSX5D68,Belgium,10.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
 ,IE00BYSX5D68,Finland,10.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
@@ -3897,11 +3900,6 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,IE00BYSX5D68,Italy,10.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
 ,IE00BYSX5D68,Spain,10.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
 ,IE00BYSX5D68,Other,5.0,Vanguard SRI Euro Investment Grade Bond Index Fund,Bloomberg Barclays EUR Non-Government Float Adjusted Bond
-,IE000N5JOGS2,China,100.0,HSBC China Government Local Bond UCITS ETF C,Bloomberg China Treasury + Policy Bank
-,DE000A0H0728,Global,100.0,iShares Diversified Commodity Swap UCITS ETF (DE),Bloomberg Commodity
-,IE00B58ZM503,Global,100.0,UBS ETF (IE) Bloomberg Commodity Index SF UCITS ETF (EUR) A-acc,Bloomberg Commodity (EUR Hedged)
-,DE000A1CXBV8,Global,100.0,L&G Longer Dated All Commodities UCITS ETF,Bloomberg Commodity Index 3 Month Forward
-,LU1829218749,Global,100.0,Amundi Bloomberg Equal-Weight Commodity Ex-Agriculture UCITS ETF Acc,Bloomberg Energy and Met
 ,IE00BJK55C48,Germany,30.0,iShares EUR High Yield Corporate Bond ESG UCITS ETF EUR (Acc),Bloomberg MSCI Euro Corporate High Yield Sustainable BB+ SRI Bond
 ,IE00BJK55C48,France,20.0,iShares EUR High Yield Corporate Bond ESG UCITS ETF EUR (Acc),Bloomberg MSCI Euro Corporate High Yield Sustainable BB+ SRI Bond
 ,IE00BJK55C48,Italy,15.0,iShares EUR High Yield Corporate Bond ESG UCITS ETF EUR (Acc),Bloomberg MSCI Euro Corporate High Yield Sustainable BB+ SRI Bond
@@ -3914,4 +3912,3 @@ XDN0,IE00B9MRHC27,Other,24.34,Xtrackers MSCI Nordic UCITS ETF 1D,MSCI Nordic Cou
 ,LU1615090864,Italy,10.0,BNP Paribas Easy ESG Dividend Europe UCITS ETF,BNP Paribas Easy ESG Dividend Europe
 ,LU1615090864,Spain,10.0,BNP Paribas Easy ESG Dividend Europe UCITS ETF,BNP Paribas Easy ESG Dividend Europe
 ,LU1615090864,Other,10.0,BNP Paribas Easy ESG Dividend Europe UCITS ETF,BNP Paribas Easy ESG Dividend Europe
-,LU0779800910,China,100.0,Xtrackers CSI 300 Swap UCITS ETF 1C,CSI 300
