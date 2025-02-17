@@ -27,10 +27,6 @@ class PortfolioAllocation:
             # Filter for requested indexes
             df = df[df['Index'].isin(indexes)]
 
-            # Check if any assets are present
-            if df.empty:
-                return pd.DataFrame({'Paese': ['No data'], 'Peso': [100]})
-
             # Remove duplicate country entries within each index
             df = df.drop_duplicates(subset=['Index', 'Country'], keep='first')
 
@@ -42,7 +38,7 @@ class PortfolioAllocation:
             weight_mapping = dict(zip(indexes, weights['weights']))
             missing_indexes = set(weight_mapping.keys()) - set(df['Index'].unique())
 
-            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Country': "Dati mancanti per l'indice:\n" + index,
+            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Country': "Allocazione geografica mancante per:\n" + index,
                                           'Allocation': 100, 'Fund': 'Missing', 'Index': index} for index in
                                          missing_indexes])
 
