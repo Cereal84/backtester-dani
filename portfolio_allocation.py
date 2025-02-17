@@ -40,6 +40,13 @@ class PortfolioAllocation:
 
             # Create a weight mapping for indexes
             weight_mapping = dict(zip(indexes, weights['weights']))
+            missing_indexes = set(weight_mapping.keys()) - set(df['Index'].unique())
+
+            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Country': "Dati mancanti per l'indice:\n" + index,
+                                          'Allocation': 100, 'Fund': 'Missing', 'Index': index} for index in
+                                         missing_indexes])
+
+            df = pd.concat([df, missing_data], ignore_index=True)
 
             # Apply weight to allocation values
             df['Weighted_Allocation'] = df.apply(lambda row: row['Allocation'] * weight_mapping[row['Index']], axis=1)
