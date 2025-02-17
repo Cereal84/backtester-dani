@@ -1,0 +1,11 @@
+[Unit]
+Description=Backtester
+After=network.target
+
+[Service]
+User=dani
+ExecStart=/bin/bash /home/dani/backtester/service.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
