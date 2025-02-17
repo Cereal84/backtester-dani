@@ -13,31 +13,14 @@ from factor_regression import calculate_factor_exposure
 from imports_handler import match_asset_name, importa_dati,load_asset_list
 from portfolio_allocation import PortfolioAllocation
 from math_logic import MathLogic
+import plotly.express as px
+from portfolio_report import PortfolioReport
 
-from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH
+from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH,LOGIN_INDICATOR_STYLE
 
 warnings.filterwarnings("ignore", category=UserWarning)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)  # Show only errors
-
-# Define style constant
-LOGIN_INDICATOR_STYLE = {
-    "position": "fixed",
-    "top": "15px",  # Ridotto da 20px
-    "right": "15px",  # Ridotto da 20px
-    "fontSize": "14px",  # Ridotto da 16px
-    "zIndex": 1500,
-    "cursor": "default",
-    "transition": "opacity 0.3s ease",
-    "display": "flex",
-    "alignItems": "center",
-    "gap": "6px",  # Ridotto da 8px
-    "backgroundColor": "rgba(255, 255, 255, 0.9)",
-    "padding": "6px 10px",  # Ridotto da 8px 12px
-    "borderRadius": "15px",  # Ridotto da 20px
-    "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.1)"
-}
-
 
 def register_callbacks(app):
     """Registra tutti i callback per l'app Dash."""
@@ -429,6 +412,7 @@ def register_callbacks(app):
 
         indici_usati = dati_df.columns
         country_allocation = PortfolioAllocation().calculate_country_allocation(indici_usati, pesi_correnti)
+
         sector_allocation = PortfolioAllocation().calculate_sector_allocation(indici_usati, pesi_correnti)
 
         # Ensure 'Date' column is datetime for calculations
@@ -442,6 +426,7 @@ def register_callbacks(app):
 
         # Calculate factor exposure for the portfolio
         factor_exposure_portfolio, factor_names = calculate_factor_exposure(portfolio_df[["Portfolio","Date"]])
+        factor_exposure_benchmark = None
         if 'Benchmark' in portfolio_df.columns:    #If the benchmark column exists calculate the factor exposure for the benchmark
             factor_exposure_benchmark, factor_names = calculate_factor_exposure(portfolio_df[["Benchmark","Date"]])
 
@@ -471,6 +456,8 @@ def register_callbacks(app):
 
         # Apply the translation to the factor names
         factor_names_italian = [factor_name_translation.get(name, name) for name in factor_names]
+
+        # Print Portfolio Data
 
         # Create a bar chart for the factor exposure
         factor_exposure_fig = go.Figure()
@@ -562,7 +549,7 @@ def register_callbacks(app):
         )
 
         titolo_warning = html.Div(
-            children="Funzione sperimentale, potrebbero esserci errori o dati mancanti",
+            children="Funzione sperimentale, potrebbero esserci errori",
             style={
                 'textAlign': 'center',
                 'fontSize': '20px',
@@ -593,6 +580,7 @@ def register_callbacks(app):
             ),
             hoverinfo='label+percent',  # Display label and percentage on hover
             pull=[0.1, 0, 0, 0, 0, 0, 0, 0],  # Slightly "explode" the first slice for emphasis (optional)
+            showlegend=False  # Hide the legend for a cleaner look
         ))
 
         country_fig.update_layout(
@@ -617,14 +605,30 @@ def register_callbacks(app):
             ),
             hoverinfo='label+percent',  # Display label and percentage on hover
             pull=[0, 0.1, 0, 0, 0, 0, 0, 0],  # Slightly "explode" the second slice for emphasis (optional)
+            showlegend=False  # Hide the legend for a cleaner look
         ))
 
         sector_fig.update_layout(
-            title="Allocazione azionaria per settore",
+            title="Settori presenti nell'allocazione azionaria (No bond,No commodity)",
             title_x=0.5,  # Center the title
             plot_bgcolor='rgba(0,0,0,0)',  # Remove the background color for a cleaner look
             margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
         )
+
+        """PortfolioReport.create_portfolio_report(portfolio_df, drawdown, factor_exposure_portfolio, factor_exposure_benchmark,
+                                correlation_matrix, cagr_data, volatility_data, sharpe_data, country_allocation,
+                                sector_allocation)
+        """
+
+        # Prepare the choropleth map
+        mappa = px.choropleth(country_allocation,
+                              locations='Paese',
+                              locationmode='country names',
+                              color='Peso',
+                              hover_name='Paese',
+                              color_continuous_scale=px.colors.sequential.Plasma_r,  # Reverse Plasma scale
+                              projection='natural earth',
+                              title="Country Allocation by Weight")
 
         portfolio_fig = plc.plot_line_chart(column_except_date, portfolio_df, PORTFOLIO_COLOR, BENCHMARK_COLOR)
         multiple_assets_plot = html.Div([
@@ -647,6 +651,7 @@ def register_callbacks(app):
                 html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),  # Country Allocation
                 html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})  # Sector Allocation
             ], style={'width': '100%'}),
+            html.Div(dcc.Graph(figure=mappa), style={'width': '100%'}),  # Country Allocation Map
             html.Div(dcc.Graph(figure=factor_exposure_fig), style={'width': '100%'})  # Factor Exposure
         ])
 
