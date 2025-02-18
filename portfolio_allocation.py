@@ -38,7 +38,7 @@ class PortfolioAllocation:
             weight_mapping = dict(zip(indexes, weights['weights']))
             missing_indexes = set(weight_mapping.keys()) - set(df['Index'].unique())
 
-            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Country': "Allocazione geografica mancante per:\n" + index,
+            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Country': index,
                                           'Allocation': 100, 'Fund': 'Missing', 'Index': index} for index in
                                          missing_indexes])
 
@@ -46,8 +46,6 @@ class PortfolioAllocation:
 
             # Apply weight to allocation values
             df['Weighted_Allocation'] = df.apply(lambda row: row['Allocation'] * weight_mapping[row['Index']], axis=1)
-
-            # Normalize weights so they sum to 100
             df['Weighted_distibuted_Allocation'] = 100 * df['Weighted_Allocation'] / df['Weighted_Allocation'].sum()
 
             # Aggregate weighted allocations by country
@@ -56,7 +54,6 @@ class PortfolioAllocation:
             # Rinomina le cose in italiano
             result = result.rename(
                 columns={'Country': 'Paese', 'Weighted_distibuted_Allocation': 'Peso'})
-
             return result
 
         except Exception as e:
@@ -86,10 +83,6 @@ class PortfolioAllocation:
             # Filter for requested indexes
             df = df[df['Index'].isin(indexes)]
 
-            # Check if any assets are present
-            if df.empty:
-                return pd.DataFrame({'Settore': ['No data'], 'Peso': [100]})
-
             # Remove duplicate country entries within each index
             df = df.drop_duplicates(subset=['Index', 'Sector'], keep='first')
 
@@ -99,12 +92,16 @@ class PortfolioAllocation:
 
             # Create a weight mapping for indexes
             weight_mapping = dict(zip(indexes, weights['weights']))
+            missing_indexes = set(weight_mapping.keys()) - set(df['Index'].unique())
+
+            missing_data = pd.DataFrame([{'Ticker': 'Missing', 'ISIN': 'Missing', 'Sector':  index,
+                                          'Allocation': 100, 'Fund': 'Missing', 'Index': index} for index in
+                                         missing_indexes])
+
+            df = pd.concat([df, missing_data], ignore_index=True)
 
             # Apply weight to allocation values
-            df['Weighted_Allocation'] = df.apply(lambda row: row['Allocation'] * weight_mapping[row['Index']],
-                                                 axis=1)
-
-            # Normalize weights so they sum to 100
+            df['Weighted_Allocation'] = df.apply(lambda row: row['Allocation'] * weight_mapping[row['Index']],axis=1)
             df['Weighted_distibuted_Allocation'] = 100 * df['Weighted_Allocation'] / df['Weighted_Allocation'].sum()
 
             # Aggregate weighted allocations by country

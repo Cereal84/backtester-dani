@@ -548,17 +548,6 @@ def register_callbacks(app):
             margin=dict(l=40, r=40, t=40, b=40)
         )
 
-        titolo_warning = html.Div(
-            children="Funzione sperimentale, potrebbero esserci errori",
-            style={
-                'textAlign': 'center',
-                'fontSize': '20px',
-                'fontWeight': 'bold',
-                'color': 'darkred',
-                'marginBottom': '20px'
-            }
-        )
-
         # Define pastel colors
         pastel_colors = [
             '#AEC6CF', '#FFD1DC', '#FFB3DE', '#B5EAEA', '#C2F0C2',
@@ -584,7 +573,7 @@ def register_callbacks(app):
         ))
 
         country_fig.update_layout(
-            title="Allocazione geografica (Azioni & Obbligazioni)",
+            title="Allocazione geografica",
             title_x=0.5,  # Center the title
             plot_bgcolor='rgba(0,0,0,0)',  # Remove the background color for a cleaner look
             margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
@@ -609,7 +598,7 @@ def register_callbacks(app):
         ))
 
         sector_fig.update_layout(
-            title="Settori presenti nell'allocazione azionaria (No bond,No commodity)",
+            title="Allocazione per settore",
             title_x=0.5,  # Center the title
             plot_bgcolor='rgba(0,0,0,0)',  # Remove the background color for a cleaner look
             margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
@@ -646,7 +635,6 @@ def register_callbacks(app):
             html.Div(dcc.Graph(figure=rolling2), style={'width': '100%'}),  # Rolling 5y
             html.Div(dcc.Graph(figure=rolling3), style={'width': '100%'}),  # Rolling 10y
             html.Div(dcc.Graph(figure=drawdown), style={'width': '100%'}),  # Drawdown
-            html.Div(titolo_warning, style={'width': '100%'}),  # Fixed width format
             html.Div([
                 html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),  # Country Allocation
                 html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})  # Sector Allocation
