@@ -326,17 +326,36 @@ class LayoutManager:
                     )
                 ]),
 
-                dbc.Button(
-                    "Esporta il Report in PDF.",
-                    id="save-pdf-button",
-                    style={
-                        "backgroundColor": PORTFOLIO_COLOR,  # Use the color variable
-                        "color": "#000",  # Text color
-                        "width": "100%",
-                        "marginBottom": "50px",  # Add space below the button
-                    },
-                    className="mt-3",
-                ),
+                dbc.Row([
+                    dbc.Col(
+                        dbc.Button(
+                            "Scarica la pagina in PDF",
+                            id="save-pdf-button",
+                            style={
+                                "backgroundColor": PORTFOLIO_COLOR,  # Use the color variable
+                                "color": "#000",  # Text color
+                                "width": "100%",
+                                "marginBottom": "50px",  # Add space below the button
+                            },
+                            className="mt-3",
+                        ),
+                        width=6
+                    ),
+                    dbc.Col(
+                        dbc.Button(
+                            "Ricevi Sommario del Portafoglio",
+                            id="get-summary-button",
+                            style={
+                                "backgroundColor": PORTFOLIO_COLOR,  # Use the color variable
+                                "color": "#000",  # Text color
+                                "width": "100%",
+                                "marginBottom": "50px",  # Add space below the button
+                            },
+                            className="mt-3",
+                        ),
+                        width=6
+                    ),
+                ]),
                 html.Div(id="hidden-div", style={"display": "none"}),
 
                 dcc.Location(id="url", refresh=True),

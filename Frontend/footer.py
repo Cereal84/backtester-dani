@@ -1,4 +1,3 @@
-# footer.py
 from dash import html
 import dash_bootstrap_components as dbc
 
@@ -27,7 +26,7 @@ class Footer:
                                     children=[
                                         # Centered title
                                         html.Div(
-                                            html.H4("By Dani & Dati", className="mb-3"),
+                                            html.H4("By Dani & Dati", className="mb-0"),
                                             className="text-center"
                                         ),
                                         # Absolutely positioned counter
@@ -42,37 +41,69 @@ class Footer:
                                     ]
                                 ),
 
-                                # Rest of the content
+                                # Content with two separate rows
                                 html.Div(
                                     className="text-center",
                                     style={'marginLeft': 'auto', 'marginRight': 'auto', 'maxWidth': '1200px'},
                                     children=[
-                                        html.Div([
-                                            html.H5("Contributors", className="mt-4"),
-                                            html.Ul([
-                                                html.Li("Koki - Server Backend"),
-                                                html.Li("Marco Zeuli - Developer"),
-                                                html.Li("Matteo Veroni - Developer"),
-                                            ], className="list-unstyled text-muted"),
-                                        ], className="col-md-4 mx-auto"),
+                                        # First row: Contributors on the same line with separator
+                                        dbc.Row([
+                                            dbc.Col(
+                                                html.Div([
+                                                    html.H5("Contributors e Link utili", className="mt-4"),
+                                                    html.Div([
+                                                        html.Span("Koki", style={'marginRight': '10px'}),
+                                                        html.Span("•", style={'marginRight': '10px'}),
+                                                        html.Span("Marco Zeuli ", style={'marginRight': '10px'}),
+                                                        html.Span("•", style={'marginRight': '10px'}),
+                                                        html.Span("Matteo Veroni"),
+                                                    ], className="text-muted")
+                                                ]),
+                                                width="auto",
+                                                className="col-12 d-flex justify-content-center"
+                                            ),
+                                        ]),
 
-                                        html.Div(
-                                            [
-                                                html.A("Contribuisci allo sviluppo",
-                                                      href="https://github.com/daniele96l/backtester-dani",
-                                                      style={'textDecoration': 'none'})
-                                            ],
-                                            style={'color': 'gray', 'marginTop': '1rem'}
-                                        ),
-                                        html.A(
-                                            "Informativa sulla privacy",
-                                            href="https://danieleligato-eng.notion.site/Informativa-sulla-privacy-197922846a1680d5bc0fc50711843137",
-                                            target="_blank",
-                                            className="d-block text-primary mb-3",
-                                            style={"text-decoration": "none"},
-                                        ),
+                                        # Second row: Links with separator
+                                        dbc.Row([
+                                            dbc.Col(
+                                                html.Div([
+                                                    html.A(
+                                                        "Codice GitHub",
+                                                        href="https://github.com/daniele96l/backtester-dani",
+                                                        style={'textDecoration': 'none', 'marginRight': '10px'}
+                                                    ),
+                                                    html.Span("•", style={'marginRight': '10px'}),  # Separator
+                                                    html.A(
+                                                        "Informativa sulla privacy",
+                                                        href="https://danieleligato-eng.notion.site/Informativa-sulla-privacy-197922846a1680d5bc0fc50711843137",
+                                                        target="_blank",
+                                                        className="text-primary",
+                                                        style={"text-decoration": "none", 'marginRight': '10px'}
+                                                    ),
+                                                    html.Span("•", style={'marginRight': '10px'}),  # Separator
+                                                    html.A(
+                                                        "Richiedi un ETF",
+                                                        href="https://docs.google.com/spreadsheets/d/15SZ4tBYmEb1fiTOlm2oqrIK6NateE9JOCJaWoM5VtCA/edit?gid=1307392537#gid=1307392537",
+                                                        target="_blank",
+                                                        className="text-primary",
+                                                        style={'textDecoration': 'none', 'marginRight': '10px'}
+                                                    ),
+                                                    html.Span("•", style={'marginRight': '10px'}),  # Separator
+                                                    html.A(
+                                                        "Supporta il progetto",
+                                                        href="https://www.paypal.com/donate/?hosted_button_id=M378MEXMSSQT6",
+                                                        target="_blank",
+                                                        className="text-primary",
+                                                        style={'textDecoration': 'none'}
+                                                    ),
+                                                ]),
+                                                width="auto",
+                                                className="col-12 d-flex justify-content-center"
+                                            ),
+                                        ]),
                                     ]
-                                )
+                                ),
                             ]
                         )
                     ],

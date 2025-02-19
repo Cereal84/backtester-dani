@@ -10,13 +10,16 @@ import logging
 import warnings
 from Frontend.layout import LayoutManager
 from factor_regression import calculate_factor_exposure
-from imports_handler import match_asset_name, importa_dati,load_asset_list
+from imports_handler import match_asset_name, importa_dati, load_asset_list
 from portfolio_allocation import PortfolioAllocation
 from math_logic import MathLogic
 import plotly.express as px
-from portfolio_report import PortfolioReport
+from report_generator import PortfolioReport
+from summary_table import SummaryTable
+from constants import factor_name_translation, custom_colorscale, pastel_colors, rolling_periods
 
-from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH,LOGIN_INDICATOR_STYLE
+from config import APP_TITLE, BENCHMARK_COLOR, PORTFOLIO_COLOR, SERVER_HOST, SERVER_PORT, INDEX_LIST_FILE_PATH, \
+    LOGIN_INDICATOR_STYLE
 
 warnings.filterwarnings("ignore", category=UserWarning)
 log = logging.getLogger('werkzeug')
@@ -119,6 +122,23 @@ def register_callbacks(app):
             return False, dash.no_update
 
         return False, False
+
+    @app.callback(
+        [Output("menu-button", "className"),
+         Output("interval-component", "disabled")],
+        [Input("menu-button", "n_clicks"),
+         Input("interval-component", "n_intervals")],
+        [State("menu-button", "className")]
+    )
+    def toggle_buttons(n_clicks, n_intervals, current_class):
+        if n_clicks:
+            if "active" in current_class:
+                return "btn-menu", True
+            else:
+                return "btn-menu active", False
+        elif n_intervals > 0:
+            return "btn-menu", True
+        return "btn-menu", True
 
     @app.callback(
         [
@@ -261,6 +281,18 @@ def register_callbacks(app):
         ])
 
 
+    """    @app.callback(
+            [Input('create-portfolio-button', 'n_clicks')],
+             [State('portfolio-table', 'data')],
+        )
+        def update_summary_table(n_clicks, table_data):
+            if table_data is None:
+                return dash.no_update  # Do nothing if no data is provided
+    
+            summary_table_instance = SummaryTable()
+            summary_table_instance.create_summary_table(table_data)
+    """
+
     # Callback per gestire la creazione del portafoglio
     @app.callback(
         [Output('portfolio-feedback', 'children'),
@@ -276,7 +308,6 @@ def register_callbacks(app):
          State('end-year-dropdown', 'value')]
     )
     def create_portfolio(n_clicks, table_data, benchmark, start_year, end_year):
-        # Set default years if not provided
         warnings_data_benchmark = []
         start_year = start_year or 1970
         end_year = end_year or 2024
@@ -313,20 +344,20 @@ def register_callbacks(app):
 
             dati, warnings_data = importa_dati(indici)
 
-            #Calcola i ritorni per ogni asset
+            # Calcola i ritorni per ogni asset
             pct_change = dati.pct_change()
             pct_change = pct_change.dropna()
             # Scala i ritorni per il peso e poi fanne la media
-            dati_scalati = pct_change * df['Percentuale'].values / 100 #Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
+            dati_scalati = pct_change * df[
+                'Percentuale'].values / 100  # Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
 
             pesi_correnti = df['Percentuale'].values / 100
 
             dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
             dati_scalati['Portfolio'] = 100 * (1 + dati_scalati['Portfolio_return']).cumprod()
-
             dati_scalati = dati_scalati.drop(columns=['Portfolio_return'])
-
             dati_scalati = dati_scalati.drop(dati.columns, axis=1)
+
             portfolio_con_benchmark = dati_scalati.copy()
 
             if benchmark:
@@ -365,8 +396,10 @@ def register_callbacks(app):
                 dati = dati.loc[:end_dt]
 
             first_year = first_portfolio_date.year
-            dynamic_years_start = [{'label': str(year), 'value': year} for year in range(first_year, 2025)] #Fist year is the fist year of the portfolio
-            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year, 2025)] #Start year è il primo anno dopo l'anno minimo settato dall'utente
+            dynamic_years_start = [{'label': str(year), 'value': year} for year in
+                                   range(first_year, 2025)]  # Fist year is the fist year of the portfolio
+            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year,
+                                                                                       2025)]  # Start year è il primo anno dopo l'anno minimo settato dall'utente
 
             # Fornisci feedback all'utente e salva i dati nel Store
             portfolio_con_benchmark.reset_index(inplace=True)
@@ -379,85 +412,66 @@ def register_callbacks(app):
 
         return "", "", "", dash.no_update, dash.no_update, dash.no_update
 
-
-
     @app.callback(
-        [Output("menu-button", "className"),
-         Output("interval-component", "disabled")],
-        [Input("menu-button", "n_clicks"),
-         Input("interval-component", "n_intervals")],
-        [State("menu-button", "className")]
+        [Input('get-summary-button', 'n_clicks'),
+         Input('additional-feedback', 'data'),
+         Input("login-state", "data")],
+        prevent_initial_call=True
     )
-    def toggle_buttons(n_clicks, n_intervals, current_class):
-        if n_clicks:
-            if "active" in current_class:
-                return "btn-menu", True
+    def generare_report(n_clicks,data,email):
+        if n_clicks is None:
+            return dash.no_update
+        else:
+            if email["logged_in"]:
+                PortfolioReport().create_portfolio_report(data,email["username"])
             else:
-                return "btn-menu active", False
-        elif n_intervals > 0:
-            return "btn-menu", True
-        return "btn-menu", True
+                print("Accesso non effettuato")
 
     @app.callback(
-        Output('additional-feedback', 'children'),  # Output to display the charts
+        Output('additional-feedback', 'children'),
+        Output('additional-feedback', 'data'),
         [Input('portfolio-data', 'data'),
          Input('assets-data', 'data'),
-         Input('pesi-correnti', 'data')]
+         Input('pesi-correnti', 'data')],
+        prevent_initial_call=True
     )
     def plot_data(portfolio_data, dati, pesi_correnti):  # ----------- KING
 
         portfolio_df = pd.DataFrame(portfolio_data)
-        dati_df = pd.DataFrame(dati) #Sto ricevendo un DICT e non un DataFrame, quindi le colonne duplicate erano state rimosse
+        dati_df = pd.DataFrame(dati)  # Sto ricevendo un DICT e non un DataFrame, quindi le colonne duplicate erano state rimosse
         # Questo vuol dire che se metto due ETF uguali nella lista, uno dei due verrà rimosso
 
         indici_usati = dati_df.columns
         country_allocation = PortfolioAllocation().calculate_country_allocation(indici_usati, pesi_correnti)
-
         sector_allocation = PortfolioAllocation().calculate_sector_allocation(indici_usati, pesi_correnti)
 
         # Ensure 'Date' column is datetime for calculations
         portfolio_df['Date'] = pd.to_datetime(portfolio_df['Date'])
-        rolling_periods = [36, 60, 120]
         column_except_date = [col for col in portfolio_df.columns if col != 'Date']
 
-        rolling1, rolling2, rolling3 = MathLogic.calculate_3_rolling_returns(portfolio_df, rolling_periods,column_except_date)
+        rolling1, rolling2, rolling3 = MathLogic.calculate_3_rolling_returns(portfolio_df, rolling_periods,
+                                                                             column_except_date)
 
-        drawdown = plc.plot_drawdown(portfolio_df, PORTFOLIO_COLOR,BENCHMARK_COLOR,column_except_date)
+        drawdown = plc.plot_drawdown(portfolio_df, PORTFOLIO_COLOR, BENCHMARK_COLOR, column_except_date)
 
         # Calculate factor exposure for the portfolio
-        factor_exposure_portfolio, factor_names = calculate_factor_exposure(portfolio_df[["Portfolio","Date"]])
+        factor_exposure_portfolio, factor_names = calculate_factor_exposure(portfolio_df[["Portfolio", "Date"]])
         factor_exposure_benchmark = None
-        if 'Benchmark' in portfolio_df.columns:    #If the benchmark column exists calculate the factor exposure for the benchmark
-            factor_exposure_benchmark, factor_names = calculate_factor_exposure(portfolio_df[["Benchmark","Date"]])
+        if 'Benchmark' in portfolio_df.columns:  # If the benchmark column exists calculate the factor exposure for the benchmark
+            factor_exposure_benchmark, factor_names = calculate_factor_exposure(portfolio_df[["Benchmark", "Date"]])
 
-        scatter_fig,pie_fig,portfolio_returns = ef.calcola_frontiera_efficente(dati_df,pesi_correnti)
+        scatter_fig, pie_fig, portfolio_returns = ef.calcola_frontiera_efficente(dati_df, pesi_correnti)
 
-        cagr_data, volatility_data, sharpe_data = MathLogic.calculate_performance_metrics(portfolio_df, portfolio_returns,column_except_date)
-
+        cagr_data, volatility_data, sharpe_data = MathLogic.calculate_performance_metrics(portfolio_df,
+                                                                                          portfolio_returns,
+                                                                                          column_except_date)
         correlation_matrix = dati_df.corr()
-
-        custom_colorscale = [
-            [0, BENCHMARK_COLOR],  # Start of the scale
-            [1, PORTFOLIO_COLOR]  # End of the scale
-        ]
 
         # Assuming 'factor_names' is a list of factor names (probably from the regression results)
         factor_names = [cell.data for cell in factor_names]
 
-        # Map the factor names to Italian using the dictionary
-        factor_name_translation = {
-            "Mkt-RF": "Mercato-RF",
-            "SMB": "Small Cap",
-            "HML": "Value",
-            "RMW": "Profitabilità",
-            "CMA": "Investimenti conservativi",
-            "RF": "Tasso privo di rischio",
-        }
-
         # Apply the translation to the factor names
         factor_names_italian = [factor_name_translation.get(name, name) for name in factor_names]
-
-        # Print Portfolio Data
 
         # Create a bar chart for the factor exposure
         factor_exposure_fig = go.Figure()
@@ -498,7 +512,6 @@ def register_callbacks(app):
             margin=dict(l=40, r=40, t=40, b=40)
         )
 
-
         sharpe_fig = go.Figure()
         sharpe_fig.add_trace(go.Bar(
             x=sharpe_data["Portfolio"],
@@ -522,7 +535,6 @@ def register_callbacks(app):
             y=cagr_data["Value"],
             name="Ritorno Composto Annuo",
             marker=dict(color=[PORTFOLIO_COLOR, BENCHMARK_COLOR])
-
 
         ))
         cagr_fig.update_layout(
@@ -548,36 +560,21 @@ def register_callbacks(app):
             margin=dict(l=40, r=40, t=40, b=40)
         )
 
-        # Define pastel colors
-        pastel_colors = [
-            '#AEC6CF', '#FFD1DC', '#FFB3DE', '#B5EAEA', '#C2F0C2',
-            '#FFBCB3', '#FFCC99', '#D9EAD3', '#D5A6BD', '#FF6666'
-        ]
+        # Round values to one decimal place and format as percentages
+        country_allocation['Peso'] = country_allocation['Peso'].round(1)
+        country_allocation['Percentuale'] = country_allocation['Peso'].astype(str) + "%"
 
-        # Create a pie chart for the country allocation
-        country_fig = go.Figure()
-        country_fig.add_trace(go.Pie(
+        # Create Treemap
+        country_fig = go.Figure(go.Treemap(
             labels=country_allocation['Paese'],
+            parents=[""] * len(country_allocation),  # No hierarchy
             values=country_allocation['Peso'],
-            hole=0.3,
-            textinfo='percent+label',  # Show both the percentage and label
-            insidetextorientation='horizontal',  # Make text horizontal inside the pie
-            textfont=dict(size=14, color='black'),  # Style text for better visibility
-            marker=dict(
-                colors=pastel_colors,  # Use pastel color palette
-                line=dict(color='white', width=2)  # Add white border to make slices pop
-            ),
-            hoverinfo='label+percent',  # Display label and percentage on hover
-            pull=[0.1, 0, 0, 0, 0, 0, 0, 0],  # Slightly "explode" the first slice for emphasis (optional)
-            showlegend=False  # Hide the legend for a cleaner look
+            textinfo="label+text",  # Show country name + percentage
+            text=country_allocation['Percentuale'],  # Display the formatted percentage
+            marker=dict(colors=pastel_colors),  # Keep pastel color theme
         ))
 
-        country_fig.update_layout(
-            title="Allocazione geografica",
-            title_x=0.5,  # Center the title
-            plot_bgcolor='rgba(0,0,0,0)',  # Remove the background color for a cleaner look
-            margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
-        )
+        country_fig.update_layout(title="Allocazione geografica", title_x=0.5)
 
         # Create a pie chart for the sector allocation
         sector_fig = go.Figure()
@@ -604,11 +601,6 @@ def register_callbacks(app):
             margin=dict(t=40, b=40, l=40, r=40),  # Adjust the margins for better spacing
         )
 
-        """PortfolioReport.create_portfolio_report(portfolio_df, drawdown, factor_exposure_portfolio, factor_exposure_benchmark,
-                                correlation_matrix, cagr_data, volatility_data, sharpe_data, country_allocation,
-                                sector_allocation)
-        """
-
         # Prepare the choropleth map
         mappa = px.choropleth(country_allocation,
                               locations='Paese',
@@ -617,7 +609,7 @@ def register_callbacks(app):
                               hover_name='Paese',
                               color_continuous_scale=px.colors.sequential.Plasma_r,  # Reverse Plasma scale
                               projection='natural earth',
-                              title="Country Allocation by Weight")
+                              title="Mappa dei nostri investimenti")
 
         portfolio_fig = plc.plot_line_chart(column_except_date, portfolio_df, PORTFOLIO_COLOR, BENCHMARK_COLOR)
         multiple_assets_plot = html.Div([
@@ -636,8 +628,10 @@ def register_callbacks(app):
             html.Div(dcc.Graph(figure=rolling3), style={'width': '100%'}),  # Rolling 10y
             html.Div(dcc.Graph(figure=drawdown), style={'width': '100%'}),  # Drawdown
             html.Div([
-                html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),  # Country Allocation
-                html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})  # Sector Allocation
+                html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),
+                # Country Allocation
+                html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})
+                # Sector Allocation
             ], style={'width': '100%'}),
             html.Div(dcc.Graph(figure=mappa), style={'width': '100%'}),  # Country Allocation Map
             html.Div(dcc.Graph(figure=factor_exposure_fig), style={'width': '100%'})  # Factor Exposure
@@ -648,8 +642,21 @@ def register_callbacks(app):
         else:
             total_plot = [single_assets_plot]  # Wrap in a list for consistency
 
+        data_output = {
+            "performance_metrics": {
+                "cagr_data": cagr_data.to_dict(),
+                "volatility_data": volatility_data.to_dict(),
+                "sharpe_data": sharpe_data.to_dict()
+            },
+            "allocations": {
+                "country": country_allocation.to_dict(),
+                "sector": sector_allocation.to_dict(),
+                "factor_exposure": factor_exposure_portfolio
+            }
+        }
+
         # Return both graphs side by side, and the line chart below
-        return html.Div(total_plot)
+        return html.Div(total_plot),data_output
 
 
 def main():
@@ -664,7 +671,7 @@ def main():
     initial_table_data = pd.DataFrame(columns=['ETF', 'Percentuale'])
 
     # Imposta il layout dell'app
-    app.layout = LayoutManager.create_layout(asset_list, initial_table_data,app)
+    app.layout = LayoutManager.create_layout(asset_list, initial_table_data, app)
 
     # Registra i callback
     register_callbacks(app)
