@@ -365,7 +365,16 @@ class LayoutManager:
             modal,
 
             # Use Footer component
-            Footer.create(counter)
+            Footer.create(counter),
+
+            # Toast for messages
+            dbc.Toast(
+                id="report-toast",
+                header="Notification",
+                is_open=False,  # Initially hidden
+                duration=3000,  # Auto dismiss after 3 seconds
+                style={"position": "fixed", "top": "50%", "left": "50%", "transform": "translate(-50%, -50%)"}
+            ),
 
 
         ])

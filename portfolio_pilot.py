@@ -124,6 +124,27 @@ def register_callbacks(app):
         return False, False
 
     @app.callback(
+        Output("report-toast", "children"),
+        Output("report-toast", "is_open"),
+        Input("get-summary-button", "n_clicks"),
+        State("additional-feedback", "data"),
+        State("login-state", "data"),
+        prevent_initial_call=True
+    )
+    def generate_report(n_clicks, data, email):
+        if not email or "logged_in" not in email:
+            email = {"logged_in": False}
+
+        if data is None:
+            return "Devi prima creare in portafoglio su cui generare il report!", True  # Show toast with message
+
+        if email["logged_in"]:
+            PortfolioReport().create_portfolio_report(data, email["username"])
+            return "✅ Report generato con successo! Controlla la tua email ", True
+        else:
+            return "❌ Accesso non effettuato, impossibile creare il report, registrati", True
+
+    @app.callback(
         [Output("menu-button", "className"),
          Output("interval-component", "disabled")],
         [Input("menu-button", "n_clicks"),
@@ -412,20 +433,7 @@ def register_callbacks(app):
 
         return "", "", "", dash.no_update, dash.no_update, dash.no_update
 
-    @app.callback(
-        [Input('get-summary-button', 'n_clicks'),
-         Input('additional-feedback', 'data'),
-         Input("login-state", "data")],
-        prevent_initial_call=True
-    )
-    def generare_report(n_clicks,data,email):
-        if n_clicks is None:
-            return dash.no_update
-        else:
-            if email["logged_in"]:
-                PortfolioReport().create_portfolio_report(data,email["username"])
-            else:
-                print("Accesso non effettuato")
+
 
     @app.callback(
         Output('additional-feedback', 'children'),
