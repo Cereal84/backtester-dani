@@ -136,13 +136,13 @@ def register_callbacks(app):
             email = {"logged_in": False}
 
         if data is None:
-            return "Devi prima creare in portafoglio su cui generare il report!", True  # Show toast with message
+            return "Nessuno portafoglio presente sul quale generare il report", True  # Show toast with message
 
         if email["logged_in"]:
             PortfolioReport().create_portfolio_report(data, email["username"])
             return "✅ Report generato con successo! Controlla la tua email ", True
         else:
-            return "❌ Accesso non effettuato, impossibile creare il report, registrati", True
+            return "❌ Per ricevere il report per email è necessario essere loggati", True
 
     @app.callback(
         [Output("menu-button", "className"),
