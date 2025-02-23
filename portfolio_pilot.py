@@ -313,6 +313,21 @@ def register_callbacks(app):
             summary_table_instance = SummaryTable()
             summary_table_instance.create_summary_table(table_data)
     """
+    def fetching_benckmark(benchmark,dati_scalati,warnings_data):
+        indice_benchmark = match_asset_name([benchmark])
+        dati_benckmark, warnings_data_benchmark = importa_dati(indice_benchmark)
+        dati_benckmark = dati_benckmark.loc[:, ~dati_benckmark.columns.duplicated()]
+        portfolio_con_benchmark = dati_scalati.join(dati_benckmark[indice_benchmark[0]], how='inner',
+                                                    rsuffix='_benchmark')
+        portfolio_con_benchmark['Benchmark'] = portfolio_con_benchmark[indice_benchmark[0]] / \
+                                               portfolio_con_benchmark[indice_benchmark[0]].iloc[0] * 100
+        portfolio_con_benchmark = portfolio_con_benchmark.drop(columns=[indice_benchmark[0]])
+        portfolio_con_benchmark['Portfolio'] = portfolio_con_benchmark['Portfolio'] / \
+                                               portfolio_con_benchmark['Portfolio'].iloc[0] * 100
+        if warnings_data[0] < warnings_data_benchmark[0]:
+            warnings_data = warnings_data_benchmark
+
+        return portfolio_con_benchmark, warnings_data
 
     # Callback per gestire la creazione del portafoglio
     @app.callback(
@@ -329,7 +344,6 @@ def register_callbacks(app):
          State('end-year-dropdown', 'value')]
     )
     def create_portfolio(n_clicks, table_data, benchmark, start_year, end_year):
-        warnings_data_benchmark = []
         start_year = start_year or 1970
         end_year = end_year or 2024
         start_date = pd.Timestamp(f'{start_year}-01-01')
@@ -369,9 +383,8 @@ def register_callbacks(app):
             pct_change = dati.pct_change()
             pct_change = pct_change.dropna()
             # Scala i ritorni per il peso e poi fanne la media
-            dati_scalati = pct_change * df[
-                'Percentuale'].values / 100  # Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
-
+            dati_scalati = pct_change * df['Percentuale'].values / 100
+            # Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
             pesi_correnti = df['Percentuale'].values / 100
 
             dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
@@ -382,18 +395,7 @@ def register_callbacks(app):
             portfolio_con_benchmark = dati_scalati.copy()
 
             if benchmark:
-                indice_benchmark = match_asset_name([benchmark])
-                dati_benckmark, warnings_data_benchmark = importa_dati(indice_benchmark)
-                dati_benckmark = dati_benckmark.loc[:, ~dati_benckmark.columns.duplicated()]
-                portfolio_con_benchmark = dati_scalati.join(dati_benckmark[indice_benchmark[0]], how='inner',
-                                                            rsuffix='_benchmark')
-                portfolio_con_benchmark['Benchmark'] = portfolio_con_benchmark[indice_benchmark[0]] / \
-                                                       portfolio_con_benchmark[indice_benchmark[0]].iloc[0] * 100
-                portfolio_con_benchmark = portfolio_con_benchmark.drop(columns=[indice_benchmark[0]])
-                portfolio_con_benchmark['Portfolio'] = portfolio_con_benchmark['Portfolio'] / \
-                                                       portfolio_con_benchmark['Portfolio'].iloc[0] * 100
-                if warnings_data[0] < warnings_data_benchmark[0]:
-                    warnings_data = warnings_data_benchmark
+                portfolio_con_benchmark, warnings_data = fetching_benckmark(benchmark,dati_scalati,warnings_data)
 
             warnings_data_string = f"La data più lontana disponibile per l'analisi è {warnings_data[0]} poiché l'ETF {warnings_data[1]} ha dati disponibili solo a partire da quel momento."
 
@@ -417,19 +419,16 @@ def register_callbacks(app):
                 dati = dati.loc[:end_dt]
 
             first_year = first_portfolio_date.year
-            dynamic_years_start = [{'label': str(year), 'value': year} for year in
-                                   range(first_year, 2025)]  # Fist year is the fist year of the portfolio
-            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year,
-                                                                                       2025)]  # Start year è il primo anno dopo l'anno minimo settato dall'utente
+            # Fist year is the fist year of the portfolio
+            dynamic_years_start = [{'label': str(year), 'value': year} for year in range(first_year, 2025)]
+            # Start year è il primo anno dopo l'anno minimo settato dall'utente
+            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year,2025)]
 
             # Fornisci feedback all'utente e salva i dati nel Store
             portfolio_con_benchmark.reset_index(inplace=True)
 
-            # Convert pesi_correnti to a format suitable for dcc.Store
-            pesi_correnti_dict = {'weights': pesi_correnti.tolist()}
-
             return warnings_data_string, portfolio_con_benchmark.to_dict('records'), dati.to_dict(
-                'records'), dynamic_years_start, dynamic_years_end, pesi_correnti_dict
+                'records'), dynamic_years_start, dynamic_years_end, {'weights': pesi_correnti.tolist()}
 
         return "", "", "", dash.no_update, dash.no_update, dash.no_update
 
