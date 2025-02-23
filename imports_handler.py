@@ -35,6 +35,7 @@ def importa_dati(nomi_indici):
             dati = pd.concat([dati, temp_data], axis=1)  # Concatenate on index (Date)
 
     dati.dropna(inplace=True)  # Drop rows with missing values
+    #If this is nan it means that there are no rows in comune between the ETFs so the output will be empty :TODO
     # Normalize all the columns making them start from 100
     dati = dati / dati.iloc[0] * 100
 

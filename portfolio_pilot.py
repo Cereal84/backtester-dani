@@ -331,108 +331,92 @@ def register_callbacks(app):
 
     # Callback per gestire la creazione del portafoglio
     @app.callback(
-        [Output('portfolio-feedback', 'children'),
-         Output('portfolio-data', 'data'),
-         Output('assets-data', 'data'),
-         Output('start-year-dropdown', 'options'),  # Dynamically update start year options
-         Output('end-year-dropdown', 'options'),  # Dynamically update end year options
-         Output('pesi-correnti', 'data')],  # New output for pesi_correnti
+        [
+            Output('portfolio-feedback', 'children'),
+            Output('portfolio-data', 'data'),
+            Output('assets-data', 'data'),
+            Output('start-year-dropdown', 'options'),
+            Output('end-year-dropdown', 'options'),
+            Output('pesi-correnti', 'data')
+        ],
         [Input('create-portfolio-button', 'n_clicks')],
-        [State('portfolio-table', 'data'),
-         State('benchmark-dropdown', 'value'),
-         State('start-year-dropdown', 'value'),
-         State('end-year-dropdown', 'value')]
+        [
+            State('portfolio-table', 'data'),
+            State('benchmark-dropdown', 'value'),
+            State('start-year-dropdown', 'value'),
+            State('end-year-dropdown', 'value')
+        ]
     )
     def create_portfolio(n_clicks, table_data, benchmark, start_year, end_year):
+        def return_error(msg):
+            return msg, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+        if n_clicks is None or n_clicks == 0:
+            return return_error("")
+
+        if not table_data:
+            return return_error("Nessun ETF nel portafoglio da creare.")
+
         start_year = start_year or 1970
         end_year = end_year or 2024
-        start_date = pd.Timestamp(f'{start_year}-01-01')
-        end_date = pd.Timestamp(f'{end_year}-12-31')
+        start_date, end_date = pd.Timestamp(f'{start_year}-01-01'), pd.Timestamp(f'{end_year}-12-31')
 
-        # Validate the date range
         if start_date > end_date:
-            return "L'anno di inizio deve essere precedente all'anno di fine.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            return return_error("L'anno di inizio deve essere precedente all'anno di fine.")
 
-        # Convert input dates to datetime objects if they exist
-        start_dt = pd.to_datetime(start_date) if start_date else None
-        end_dt = pd.to_datetime(end_date) if end_date else None
+        # Validate and sum percentages
+        try:
+            total_percentage = sum(float(row.get('Percentuale', 0)) for row in table_data)
+        except (ValueError, TypeError):
+            return return_error("Valore percentuale non valido rilevato.")
 
-        if n_clicks is None:
-            return "", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        if total_percentage != 100:
+            return return_error(
+                f"L'allocazione totale deve essere esattamente del 100%. Totale attuale: {total_percentage:.2f}%.")
 
-        if n_clicks > 0:
-            if not table_data:
-                return "Nessun ETF nel portafoglio da creare.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-            # Calcola l'allocazione totale
-            try:
-                total_percentage = sum(float(row.get('Percentuale', 0)) for row in table_data)
-            except (ValueError, TypeError):
-                return "Valore percentuale non valido rilevato.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        # Convert data to DataFrame
+        df = pd.DataFrame(table_data)
+        nomi_etf = df['ETF']
+        indici = match_asset_name(nomi_etf)
+        dati, warnings_data = importa_dati(indici)
 
-            if total_percentage != 100:
-                return f"L'allocazione totale deve essere esattamente del 100%. Totale attuale: {total_percentage:.2f}%.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        # Calculate portfolio returns
+        pct_change = dati.pct_change().dropna()
+        dati_scalati = pct_change * df['Percentuale'].values / 100
+        dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
+        dati_scalati['Portfolio'] = 100 * (1 + dati_scalati['Portfolio_return']).cumprod()
+        dati_scalati.drop(columns=['Portfolio_return'], inplace=True)
+        dati_scalati.drop(dati.columns, axis=1, inplace=True)
 
-            # Converti i dati della tabella in DataFrame
-            df = pd.DataFrame(table_data)
-            nomi_etf = df['ETF']
-            indici = match_asset_name(nomi_etf)
+        # Process benchmark if applicable
+        portfolio_con_benchmark = dati_scalati.copy()
+        if benchmark:
+            portfolio_con_benchmark, warnings_data = fetching_benckmark(benchmark, dati_scalati, warnings_data)
 
-            dati, warnings_data = importa_dati(indici)
+        warnings_data_string = f"La data più lontana disponibile per l'analisi è {warnings_data[0]} poiché l'ETF {warnings_data[1]} ha dati disponibili solo a partire da quel momento."
 
-            # Calcola i ritorni per ogni asset
-            pct_change = dati.pct_change()
-            pct_change = pct_change.dropna()
-            # Scala i ritorni per il peso e poi fanne la media
-            dati_scalati = pct_change * df['Percentuale'].values / 100
-            # Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
-            pesi_correnti = df['Percentuale'].values / 100
+        # Adjust date ranges
+        first_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[0])
+        last_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[-1])
 
-            dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
-            dati_scalati['Portfolio'] = 100 * (1 + dati_scalati['Portfolio_return']).cumprod()
-            dati_scalati = dati_scalati.drop(columns=['Portfolio_return'])
-            dati_scalati = dati_scalati.drop(dati.columns, axis=1)
+        start_dt = max(start_date, first_portfolio_date)
+        end_dt = min(end_date, last_portfolio_date)
 
-            portfolio_con_benchmark = dati_scalati.copy()
+        dati = dati.loc[start_dt:end_dt]
+        portfolio_con_benchmark = portfolio_con_benchmark.loc[start_dt:end_dt]
 
-            if benchmark:
-                portfolio_con_benchmark, warnings_data = fetching_benckmark(benchmark,dati_scalati,warnings_data)
+        # Normalize data
+        dati = (dati / dati.iloc[0]) * 100
+        portfolio_con_benchmark = (portfolio_con_benchmark / portfolio_con_benchmark.iloc[0]) * 100
 
-            warnings_data_string = f"La data più lontana disponibile per l'analisi è {warnings_data[0]} poiché l'ETF {warnings_data[1]} ha dati disponibili solo a partire da quel momento."
+        # Generate dynamic year ranges
+        first_year = first_portfolio_date.year
+        dynamic_years = [{'label': str(year), 'value': year} for year in range(first_year, 2025)]
 
-            # Get the first and last dates of the portfolio
-            first_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[0])
-            last_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[-1])
+        portfolio_con_benchmark.reset_index(inplace=True)
 
-            if (first_portfolio_date > end_dt):
-                end_dt = last_portfolio_date
-                start_dt = first_portfolio_date
-
-            # Apply slicing and normalization based on conditions
-            if (start_dt and start_dt > first_portfolio_date):
-                dati = dati.loc[start_dt:]
-                dati = (dati / dati.iloc[0]) * 100
-                portfolio_con_benchmark = portfolio_con_benchmark.loc[start_dt:]
-                portfolio_con_benchmark = (portfolio_con_benchmark / portfolio_con_benchmark.iloc[0]) * 100
-
-            if (end_dt and end_dt < last_portfolio_date):
-                portfolio_con_benchmark = portfolio_con_benchmark.loc[:end_dt]
-                dati = dati.loc[:end_dt]
-
-            first_year = first_portfolio_date.year
-            # Fist year is the fist year of the portfolio
-            dynamic_years_start = [{'label': str(year), 'value': year} for year in range(first_year, 2025)]
-            # Start year è il primo anno dopo l'anno minimo settato dall'utente
-            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year,2025)]
-
-            # Fornisci feedback all'utente e salva i dati nel Store
-            portfolio_con_benchmark.reset_index(inplace=True)
-
-            return warnings_data_string, portfolio_con_benchmark.to_dict('records'), dati.to_dict(
-                'records'), dynamic_years_start, dynamic_years_end, {'weights': pesi_correnti.tolist()}
-
-        return "", "", "", dash.no_update, dash.no_update, dash.no_update
-
-
+        return warnings_data_string, portfolio_con_benchmark.to_dict('records'), dati.to_dict(
+            'records'), dynamic_years, dynamic_years, {'weights': df['Percentuale'].values.tolist()}
 
     @app.callback(
         Output('additional-feedback', 'children'),
