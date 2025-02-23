@@ -331,92 +331,108 @@ def register_callbacks(app):
 
     # Callback per gestire la creazione del portafoglio
     @app.callback(
-        [
-            Output('portfolio-feedback', 'children'),
-            Output('portfolio-data', 'data'),
-            Output('assets-data', 'data'),
-            Output('start-year-dropdown', 'options'),
-            Output('end-year-dropdown', 'options'),
-            Output('pesi-correnti', 'data')
-        ],
+        [Output('portfolio-feedback', 'children'),
+         Output('portfolio-data', 'data'),
+         Output('assets-data', 'data'),
+         Output('start-year-dropdown', 'options'),  # Dynamically update start year options
+         Output('end-year-dropdown', 'options'),  # Dynamically update end year options
+         Output('pesi-correnti', 'data')],  # New output for pesi_correnti
         [Input('create-portfolio-button', 'n_clicks')],
-        [
-            State('portfolio-table', 'data'),
-            State('benchmark-dropdown', 'value'),
-            State('start-year-dropdown', 'value'),
-            State('end-year-dropdown', 'value')
-        ]
+        [State('portfolio-table', 'data'),
+         State('benchmark-dropdown', 'value'),
+         State('start-year-dropdown', 'value'),
+         State('end-year-dropdown', 'value')]
     )
     def create_portfolio(n_clicks, table_data, benchmark, start_year, end_year):
-        def return_error(msg):
-            return msg, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
-        if n_clicks is None or n_clicks == 0:
-            return return_error("")
-
-        if not table_data:
-            return return_error("Nessun ETF nel portafoglio da creare.")
-
         start_year = start_year or 1970
         end_year = end_year or 2024
-        start_date, end_date = pd.Timestamp(f'{start_year}-01-01'), pd.Timestamp(f'{end_year}-12-31')
+        start_date = pd.Timestamp(f'{start_year}-01-01')
+        end_date = pd.Timestamp(f'{end_year}-12-31')
 
+        # Validate the date range
         if start_date > end_date:
-            return return_error("L'anno di inizio deve essere precedente all'anno di fine.")
+            return "L'anno di inizio deve essere precedente all'anno di fine.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        # Validate and sum percentages
-        try:
-            total_percentage = sum(float(row.get('Percentuale', 0)) for row in table_data)
-        except (ValueError, TypeError):
-            return return_error("Valore percentuale non valido rilevato.")
+        # Convert input dates to datetime objects if they exist
+        start_dt = pd.to_datetime(start_date) if start_date else None
+        end_dt = pd.to_datetime(end_date) if end_date else None
 
-        if total_percentage != 100:
-            return return_error(
-                f"L'allocazione totale deve essere esattamente del 100%. Totale attuale: {total_percentage:.2f}%.")
+        if n_clicks is None:
+            return "", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        # Convert data to DataFrame
-        df = pd.DataFrame(table_data)
-        nomi_etf = df['ETF']
-        indici = match_asset_name(nomi_etf)
-        dati, warnings_data = importa_dati(indici)
+        if n_clicks > 0:
+            if not table_data:
+                return "Nessun ETF nel portafoglio da creare.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            # Calcola l'allocazione totale
+            try:
+                total_percentage = sum(float(row.get('Percentuale', 0)) for row in table_data)
+            except (ValueError, TypeError):
+                return "Valore percentuale non valido rilevato.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        # Calculate portfolio returns
-        pct_change = dati.pct_change().dropna()
-        dati_scalati = pct_change * df['Percentuale'].values / 100
-        dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
-        dati_scalati['Portfolio'] = 100 * (1 + dati_scalati['Portfolio_return']).cumprod()
-        dati_scalati.drop(columns=['Portfolio_return'], inplace=True)
-        dati_scalati.drop(dati.columns, axis=1, inplace=True)
+            if total_percentage != 100:
+                return f"L'allocazione totale deve essere esattamente del 100%. Totale attuale: {total_percentage:.2f}%.", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        # Process benchmark if applicable
-        portfolio_con_benchmark = dati_scalati.copy()
-        if benchmark:
-            portfolio_con_benchmark, warnings_data = fetching_benckmark(benchmark, dati_scalati, warnings_data)
+            # Converti i dati della tabella in DataFrame
+            df = pd.DataFrame(table_data)
+            nomi_etf = df['ETF']
+            indici = match_asset_name(nomi_etf)
 
-        warnings_data_string = f"La data più lontana disponibile per l'analisi è {warnings_data[0]} poiché l'ETF {warnings_data[1]} ha dati disponibili solo a partire da quel momento."
+            dati, warnings_data = importa_dati(indici)
 
-        # Adjust date ranges
-        first_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[0])
-        last_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[-1])
+            # Calcola i ritorni per ogni asset
+            pct_change = dati.pct_change()
+            pct_change = pct_change.dropna()
+            # Scala i ritorni per il peso e poi fanne la media
+            dati_scalati = pct_change * df['Percentuale'].values / 100
+            # Moltiplica i ritorni di ogni per il loro peso nel portafoglio in modo da trovare il ritorno del portafoglio
+            pesi_correnti = df['Percentuale'].values / 100
 
-        start_dt = max(start_date, first_portfolio_date)
-        end_dt = min(end_date, last_portfolio_date)
+            dati_scalati['Portfolio_return'] = dati_scalati.sum(axis=1)
+            dati_scalati['Portfolio'] = 100 * (1 + dati_scalati['Portfolio_return']).cumprod()
+            dati_scalati = dati_scalati.drop(columns=['Portfolio_return'])
+            dati_scalati = dati_scalati.drop(dati.columns, axis=1)
 
-        dati = dati.loc[start_dt:end_dt]
-        portfolio_con_benchmark = portfolio_con_benchmark.loc[start_dt:end_dt]
+            portfolio_con_benchmark = dati_scalati.copy()
 
-        # Normalize data
-        dati = (dati / dati.iloc[0]) * 100
-        portfolio_con_benchmark = (portfolio_con_benchmark / portfolio_con_benchmark.iloc[0]) * 100
+            if benchmark:
+                portfolio_con_benchmark, warnings_data = fetching_benckmark(benchmark,dati_scalati,warnings_data)
 
-        # Generate dynamic year ranges
-        first_year = first_portfolio_date.year
-        dynamic_years = [{'label': str(year), 'value': year} for year in range(first_year, 2025)]
+            warnings_data_string = f"La data più lontana disponibile per l'analisi è {warnings_data[0]} poiché l'ETF {warnings_data[1]} ha dati disponibili solo a partire da quel momento."
 
-        portfolio_con_benchmark.reset_index(inplace=True)
+            # Get the first and last dates of the portfolio
+            first_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[0])
+            last_portfolio_date = pd.to_datetime(portfolio_con_benchmark.index[-1])
 
-        return warnings_data_string, portfolio_con_benchmark.to_dict('records'), dati.to_dict(
-            'records'), dynamic_years, dynamic_years, {'weights': df['Percentuale'].values.tolist()}
+            if (first_portfolio_date > end_dt):
+                end_dt = last_portfolio_date
+                start_dt = first_portfolio_date
+
+            # Apply slicing and normalization based on conditions
+            if (start_dt and start_dt > first_portfolio_date):
+                dati = dati.loc[start_dt:]
+                dati = (dati / dati.iloc[0]) * 100
+                portfolio_con_benchmark = portfolio_con_benchmark.loc[start_dt:]
+                portfolio_con_benchmark = (portfolio_con_benchmark / portfolio_con_benchmark.iloc[0]) * 100
+
+            if (end_dt and end_dt < last_portfolio_date):
+                portfolio_con_benchmark = portfolio_con_benchmark.loc[:end_dt]
+                dati = dati.loc[:end_dt]
+
+            first_year = first_portfolio_date.year
+            # Fist year is the fist year of the portfolio
+            dynamic_years_start = [{'label': str(year), 'value': year} for year in range(first_year, 2025)]
+            # Start year è il primo anno dopo l'anno minimo settato dall'utente
+            dynamic_years_end = [{'label': str(year), 'value': year} for year in range(first_year,2025)]
+
+            # Fornisci feedback all'utente e salva i dati nel Store
+            portfolio_con_benchmark.reset_index(inplace=True)
+
+            return warnings_data_string, portfolio_con_benchmark.to_dict('records'), dati.to_dict(
+                'records'), dynamic_years_start, dynamic_years_end, {'weights': pesi_correnti.tolist()}
+
+        return "", "", "", dash.no_update, dash.no_update, dash.no_update
+
+
 
     @app.callback(
         Output('additional-feedback', 'children'),
@@ -464,6 +480,62 @@ def register_callbacks(app):
         # Apply the translation to the factor names
         factor_names_italian = [factor_name_translation.get(name, name) for name in factor_names]
 
+        # Round values to one decimal place and format as percentages
+        country_allocation['Peso'] = country_allocation['Peso'].round(1)
+        country_allocation['Percentuale'] = country_allocation['Peso'].astype(str) + "%"
+
+        factor_exposure_fig, correlation_fig, sharpe_fig, cagr_fig, volatility_fig, country_fig, sector_fig, mappa, portfolio_fig = create_figures(portfolio_df, factor_exposure_portfolio, factor_exposure_benchmark, factor_names_italian,
+                        correlation_matrix, sharpe_data, cagr_data, volatility_data, country_allocation, sector_allocation,column_except_date)
+
+        multiple_assets_plot = html.Div([
+            html.Div(dcc.Graph(figure=correlation_fig), style={'width': '100%'}),  # Correlation between assets
+            html.Div(dcc.Graph(figure=scatter_fig), style={'width': '100%'}),  # Efficient frontier
+            html.Div(dcc.Graph(figure=pie_fig), style={'width': '100%'}),  # Efficient frontier
+        ])
+
+        single_assets_plot = html.Div([
+            html.Div(dcc.Graph(figure=portfolio_fig), style={'width': '100%'}),
+            html.Div(dcc.Graph(figure=cagr_fig), style={'width': '33%', 'display': 'inline-block'}),
+            html.Div(dcc.Graph(figure=volatility_fig), style={'width': '33%', 'display': 'inline-block'}),
+            html.Div(dcc.Graph(figure=sharpe_fig), style={'width': '33%', 'display': 'inline-block'}),
+            html.Div(dcc.Graph(figure=rolling1), style={'width': '100%'}),  # Rolling 3y
+            html.Div(dcc.Graph(figure=rolling2), style={'width': '100%'}),  # Rolling 5y
+            html.Div(dcc.Graph(figure=rolling3), style={'width': '100%'}),  # Rolling 10y
+            html.Div(dcc.Graph(figure=drawdown), style={'width': '100%'}),  # Drawdown
+            html.Div([
+                html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),
+                # Country Allocation
+                html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})
+                # Sector Allocation
+            ], style={'width': '100%'}),
+            html.Div(dcc.Graph(figure=mappa), style={'width': '100%'}),  # Country Allocation Map
+            html.Div(dcc.Graph(figure=factor_exposure_fig), style={'width': '100%'})  # Factor Exposure
+        ])
+
+        if len(pesi_correnti["weights"]) > 1:  # Return all the plots if there is more than one ETF
+            total_plot = [single_assets_plot, multiple_assets_plot]
+        else:
+            total_plot = [single_assets_plot]  # Wrap in a list for consistency
+
+        data_output = {
+            "performance_metrics": {
+                "cagr_data": cagr_data.to_dict(),
+                "volatility_data": volatility_data.to_dict(),
+                "sharpe_data": sharpe_data.to_dict()
+            },
+            "allocations": {
+                "country": country_allocation.to_dict(),
+                "sector": sector_allocation.to_dict(),
+                "factor_exposure": factor_exposure_portfolio
+            }
+        }
+
+        # Return both graphs side by side, and the line chart below
+        return html.Div(total_plot),data_output
+
+
+    def create_figures(portfolio_df, factor_exposure_portfolio, factor_exposure_benchmark, factor_names_italian,
+                        correlation_matrix, sharpe_data, cagr_data, volatility_data, country_allocation, sector_allocation,column_except_date):
         # Create a bar chart for the factor exposure
         factor_exposure_fig = go.Figure()
         factor_exposure_fig.add_trace(go.Bar(
@@ -551,10 +623,6 @@ def register_callbacks(app):
             margin=dict(l=40, r=40, t=40, b=40)
         )
 
-        # Round values to one decimal place and format as percentages
-        country_allocation['Peso'] = country_allocation['Peso'].round(1)
-        country_allocation['Percentuale'] = country_allocation['Peso'].astype(str) + "%"
-
         # Create Treemap
         country_fig = go.Figure(go.Treemap(
             labels=country_allocation['Paese'],
@@ -603,51 +671,8 @@ def register_callbacks(app):
                               title="Mappa dei nostri investimenti")
 
         portfolio_fig = plc.plot_line_chart(column_except_date, portfolio_df, PORTFOLIO_COLOR, BENCHMARK_COLOR)
-        multiple_assets_plot = html.Div([
-            html.Div(dcc.Graph(figure=correlation_fig), style={'width': '100%'}),  # Correlation between assets
-            html.Div(dcc.Graph(figure=scatter_fig), style={'width': '100%'}),  # Efficient frontier
-            html.Div(dcc.Graph(figure=pie_fig), style={'width': '100%'}),  # Efficient frontier
-        ])
 
-        single_assets_plot = html.Div([
-            html.Div(dcc.Graph(figure=portfolio_fig), style={'width': '100%'}),
-            html.Div(dcc.Graph(figure=cagr_fig), style={'width': '33%', 'display': 'inline-block'}),
-            html.Div(dcc.Graph(figure=volatility_fig), style={'width': '33%', 'display': 'inline-block'}),
-            html.Div(dcc.Graph(figure=sharpe_fig), style={'width': '33%', 'display': 'inline-block'}),
-            html.Div(dcc.Graph(figure=rolling1), style={'width': '100%'}),  # Rolling 3y
-            html.Div(dcc.Graph(figure=rolling2), style={'width': '100%'}),  # Rolling 5y
-            html.Div(dcc.Graph(figure=rolling3), style={'width': '100%'}),  # Rolling 10y
-            html.Div(dcc.Graph(figure=drawdown), style={'width': '100%'}),  # Drawdown
-            html.Div([
-                html.Div(dcc.Graph(figure=country_fig), style={'width': '50%', 'display': 'inline-block'}),
-                # Country Allocation
-                html.Div(dcc.Graph(figure=sector_fig), style={'width': '50%', 'display': 'inline-block'})
-                # Sector Allocation
-            ], style={'width': '100%'}),
-            html.Div(dcc.Graph(figure=mappa), style={'width': '100%'}),  # Country Allocation Map
-            html.Div(dcc.Graph(figure=factor_exposure_fig), style={'width': '100%'})  # Factor Exposure
-        ])
-
-        if len(pesi_correnti["weights"]) > 1:  # Return all the plots if there is more than one ETF
-            total_plot = [single_assets_plot, multiple_assets_plot]
-        else:
-            total_plot = [single_assets_plot]  # Wrap in a list for consistency
-
-        data_output = {
-            "performance_metrics": {
-                "cagr_data": cagr_data.to_dict(),
-                "volatility_data": volatility_data.to_dict(),
-                "sharpe_data": sharpe_data.to_dict()
-            },
-            "allocations": {
-                "country": country_allocation.to_dict(),
-                "sector": sector_allocation.to_dict(),
-                "factor_exposure": factor_exposure_portfolio
-            }
-        }
-
-        # Return both graphs side by side, and the line chart below
-        return html.Div(total_plot),data_output
+        return factor_exposure_fig, correlation_fig, sharpe_fig, cagr_fig, volatility_fig, country_fig, sector_fig, mappa, portfolio_fig
 
 
 def main():

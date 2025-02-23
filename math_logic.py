@@ -46,10 +46,10 @@ class MathLogic:
         # Round the values
         #ig cagr is longer than 2 columns, it means that the benchmark is present, so we need to adjust the values
         #BAD BAD BAD CODE
-        if len(cagr) >= 2:
+        if len(cagr) >= 2: #So if we have a benchmark
             diff = cagr['Portfolio'] - portfolio_returns* 100
             cagr['Portfolio'] = portfolio_returns * 100
-            cagr["Benchmark"] = cagr['Benchmark'] - diff
+            #cagr["Benchmark"] = cagr['Benchmark'] - diff
         else:
             cagr['Portfolio'] = portfolio_returns * 100
 
