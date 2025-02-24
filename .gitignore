@@ -4,6 +4,7 @@ config.py
 .cursorignore
 .venv/
 .vscode/
+.idea/
 .web
 __pycache__/
 assets/external/
